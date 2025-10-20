@@ -12,7 +12,5 @@ HOOKS_DIR=$HOME/.githooks
 # Local directory for the mirror repository
 LOCAL_MIRROR=$HOME/.activity-mirror
 
-# Log file path
-LOG_FILE=$HOME/activity-log.log
-
-This file serves as a template for users to configure their environment. Users should copy this file to "config.ini" and update the values as needed.
+# This file serves as a template for users to configure their environment. 
+# Users should copy this file to "config.ini" and update the values as needed.
