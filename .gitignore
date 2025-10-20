@@ -1,4 +1,3 @@
 # Ignore config files
 config.ini
-activity-log.log
 venv/
