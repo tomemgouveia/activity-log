@@ -1,22 +1,4 @@
 #!/bin/bash
-
-# Setup Hook Script for Activity Log
-set -e
-
-# Load configuration
-CONFIG_FILE="./config.ini"
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Configuration file not found: $CONFIG_FILE"
-    exit 1
-fi
-
-source <(grep = "$CONFIG_FILE" | sed 's/ *= */=/g') # Load config variables
-
-# Default values if not specified in config
-HOOKS_DIR="">${HOOKS_DIR:-$HOME/.githooks}"
-LOCAL_MIRROR="">${LOCAL_MIRROR:-$HOME/.activity-mirror}"
-LOG_FILE="">${LOG_FILE:-$HOME/activity-log.log}"
-
 # Function to log messages
 log_message() {
     echo "$(date -u) - $1" >> "$LOG_FILE"
@@ -42,16 +24,17 @@ BRANCH="$BRANCH"
 
 # Skip silently if no local mirror repo exists
 if [ ! -d "\$LOCAL_MIRROR/.git" ]; then
+    log_message "Local mirror repository does not exist, please clone first"
     exit 0
 fi
 
 MSG="activity: \$(date -u +"%Y-%m-%dT%H:%M:%SZ") from \$(basename \"\$(git rev-parse --show-toplevel 2>/dev/null)\")"
 
 (
-  cd "\$LOCAL_MIRROR" || exit 0
-  git pull origin "\$BRANCH" >/dev/null 2>&1 || true
-  git commit --allow-empty -m "\$MSG" >/dev/null 2>&1 || exit 0
-  git push origin "\$BRANCH" >/dev/null 2>&1 || true
+cd "\$LOCAL_MIRROR" || exit 0
+git pull origin "\$BRANCH" >/dev/null 2>&1 || true
+git commit --allow-empty -m "\$MSG" >/dev/null 2>&1 || exit 0
+git push origin "\$BRANCH" >/dev/null 2>&1 || true
 )
 EOF
     chmod +x "$HOOKS_DIR/post-commit"
@@ -75,5 +58,20 @@ main() {
     clone_mirror_repo
     log_message "Setup process complete!"
 }
+# Setup Hook Script for Activity Log
+set -e
 
-main
+# Load configuration
+CONFIG_FILE="./config.ini"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "Configuration file not found: $CONFIG_FILE"
+    # exit 1
+else
+    source <(grep = "$CONFIG_FILE" | sed 's/ *= */=/g') # Load config variables
+    # Default values if not specified in config
+    HOOKS_DIR="${HOOKS_DIR:-$HOME/.githooks}"
+    LOCAL_MIRROR="${LOCAL_MIRROR:-$HOME/.activity-mirror}"
+    LOG_FILE="${LOG_FILE:-$HOME/activity-log.log}"
+    
+    main
+fi
