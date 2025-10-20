@@ -1,7 +1,7 @@
 # Configuration File for Activity Log
 
 # Mirror repository URL
-MIRROR_REPO=git@github.com:tomemgouveia/activity-log.git
+MIRROR_REPO=https://github.com/tomemgouveia/activity-log.git
 
 # Branch to use for mirror commits
 BRANCH=main

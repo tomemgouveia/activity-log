@@ -23,6 +23,11 @@ REPO="$MIRROR_REPO"
 LOCAL_MIRROR="$LOCAL_MIRROR"
 BRANCH="$BRANCH"
 
+# Function to log messages with timestamp
+log() {
+    echo "\$(date '+%H:%M:%S') [activity-log] \$1" >&2
+}
+
 # 0) Re-entrancy guard: if we're already logging, do nothing.
 if [ "\${ACTIVITY_LOGGING:-}" = "1" ]; then
     exit 0
@@ -45,14 +50,25 @@ if [ ! -d "\$LOCAL_MIRROR/.git" ]; then
 fi
 
 # 3) Create a message and write an empty commit to the mirror repo with hooks disabled there.
-MSG="activity: \$(date -u '+%Y-%m-%d %H:%M:%S UTC') by \$(git config user.email)"
+REPO_NAME="\$(basename "\$TOP")"
+USER_EMAIL="\$(git config user.email)"
+MSG="activity: \$(date -u '+%Y-%m-%d %H:%M:%S UTC') by \$USER_EMAIL"
+
+log "Logging activity from \$REPO_NAME"
 
 (
 cd "\$LOCAL_MIRROR" || exit 0
 git pull -q origin "\$BRANCH" || true
 # Disable hooks for this commit to avoid recursion, and set a guard env var as well.
-ACTIVITY_LOGGING=1 git -c core.hooksPath=/dev/null commit --allow-empty -m "\$MSG" >/dev/null 2>&1 || exit 0
-git push -q origin "\$BRANCH" || true
+if ACTIVITY_LOGGING=1 git -c core.hooksPath=/dev/null commit --allow-empty -m "\$MSG" >/dev/null 2>&1; then
+    if git push -q origin "\$BRANCH" 2>/dev/null; then
+        log "✓ Activity logged successfully"
+    else
+        log "⚠ Failed to push activity log"
+    fi
+else
+    log "⚠ Failed to create activity commit"
+fi
 )
 EOF
     chmod +x "$HOOKS_DIR/post-commit"
