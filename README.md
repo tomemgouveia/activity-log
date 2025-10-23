@@ -17,6 +17,8 @@ There are two ways to use this activity logger:
 
 This approach works seamlessly with pre-commit and allows you to use other pre-commit hooks.
 
+**Note**: This is a **personal** activity logger. Use a separate, gitignored config file so it doesn't affect your team.
+
 #### Prerequisites
 1. Install [pre-commit](https://pre-commit.com/): `pip install pre-commit`
 2. **Create your own activity-log repository** on GitHub (e.g., `your-username/activity-log`)
@@ -48,27 +50,51 @@ Create a configuration file at `~/.config/activity-log-config.ini`:
 
 #### Setup in any repository
 
-Add to your `.pre-commit-config.yaml`:
+**Important**: Use a **personal, gitignored** config file to avoid forcing this hook on your team.
 
-```yaml
-repos:
-  # ... your existing pre-commit hooks ...
-  
-  # Activity logger - runs AFTER successful commits
-  - repo: https://github.com/tomemgouveia/activity-log
-    rev: main  # or a specific tag/commit
-    hooks:
-      - id: activity-log
-```
+1. Create a personal pre-commit config (gitignored):
+   ```bash
+   # Add to your repo's .gitignore (if not already there)
+   echo ".pre-commit-config-local.yaml" >> .gitignore
+   
+   # Create your personal config
+   cat > .pre-commit-config-local.yaml <<EOF
+   repos:
+     - repo: https://github.com/tomemgouveia/activity-log
+       rev: main
+       hooks:
+         - id: activity-log
+   EOF
+   ```
 
-Then install the post-commit hook type (in addition to regular pre-commit hooks):
+2. If your team already has a `.pre-commit-config.yaml`, you can merge both configs:
+   ```bash
+   # Install team hooks from the main config
+   pre-commit install
+   
+   # Also install your personal post-commit hook
+   pre-commit install --hook-type post-commit -c .pre-commit-config-local.yaml
+   ```
 
-```bash
-pre-commit install                        # Install pre-commit hooks (if not already done)
-pre-commit install --hook-type post-commit  # Install post-commit hooks
-```
+3. If you don't have a team config yet, you can add it to the main `.pre-commit-config.yaml`:
+   ```yaml
+   repos:
+     # ... your team's pre-commit hooks ...
+     
+     # Personal activity logger - runs AFTER successful commits
+     - repo: https://github.com/tomemgouveia/activity-log
+       rev: main  # or a specific tag/commit
+       hooks:
+         - id: activity-log
+   ```
+   
+   Then install both hook types:
+   ```bash
+   pre-commit install                          # Install pre-commit hooks
+   pre-commit install --hook-type post-commit  # Install post-commit hooks
+   ```
 
-**Note**: The `activity-log` hook runs **after** your commit succeeds, not before. It won't block or interfere with your existing pre-commit hooks (linters, formatters, etc.), which run before the commit.
+**Note**: The `activity-log` hook runs **after** your commit succeeds, not before. It won't block or interfere with your existing pre-commit hooks (linters, formatters, etc.).
 
 #### Example: Complete setup from scratch
 
@@ -85,23 +111,21 @@ ACTIVITY_LOG_MIRROR=$HOME/.activity-mirror
 ACTIVITY_LOG_BRANCH=main
 EOF
 
-# 3. In your project repository, create .pre-commit-config.yaml
-cat > .pre-commit-config.yaml <<EOF
+# 3. In your project repository, create a personal config (gitignored)
+echo ".pre-commit-config-local.yaml" >> .gitignore
+cat > .pre-commit-config-local.yaml <<EOF
 repos:
-  # Add your other pre-commit hooks here (linters, formatters, etc.)
-  
-  # Activity logger - runs after successful commits
   - repo: https://github.com/tomemgouveia/activity-log
     rev: main
     hooks:
       - id: activity-log
 EOF
 
-# 4. Install both hook types
-pre-commit install                        # For pre-commit hooks
-pre-commit install --hook-type post-commit  # For post-commit hooks
+# 4. Install the hooks
+pre-commit install                                              # For team's pre-commit hooks (if any)
+pre-commit install --hook-type post-commit -c .pre-commit-config-local.yaml  # For your personal post-commit hook
 
-# Done! Now every commit will be logged to your activity repository
+# Done! Now every commit will be logged to your activity repository (just for you)
 ```
 
 ### Option 2: Global Git Hook (Standalone)
