@@ -1,0 +1,16 @@
+# Configuration File for Activity Log
+
+# Mirror repository URL
+MIRROR_REPO=https://github.com/tomemgouveia/activity-log.git
+
+# Branch to use for mirror commits
+BRANCH=main
+
+# Directory for global git hooks
+HOOKS_DIR=$HOME/.githooks
+
+# Local directory for the mirror repository
+LOCAL_MIRROR=$HOME/.activity-mirror
+
+# This file serves as a template for users to configure their environment. 
+# Users should copy this file to "config.ini" and update the values as needed.

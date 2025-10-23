@@ -1,0 +1,8 @@
+- id: activity-log
+  name: Activity Log Post-Commit Hook
+  description: Logs commit activity to a central GitHub repository
+  entry: hooks/post-commit-activity-log.sh
+  language: script
+  stages: [post-commit]
+  always_run: true
+  pass_filenames: false
